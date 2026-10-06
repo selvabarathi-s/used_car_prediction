@@ -1,0 +1,12 @@
+.ucp/
+.dvc/
+.git/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+mlruns/
+data/
+
+Used_Car_Pred_MLOPS.ipynb
+.dvcignore
