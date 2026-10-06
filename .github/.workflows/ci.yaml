@@ -1,0 +1,50 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: |
+          docker build -t used-car-predictor:test .
+
+      - name: Run Docker container
+        run: |
+          docker run -d \
+            --name used-car-test \
+            -p 8501:8501 \
+            used-car-predictor:test
+
+      - name: Wait for Streamlit
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8501/_stcore/health; then
+              echo "Application is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Application failed health check"
+          docker logs used-car-test
+          exit 1
+
+      - name: Show container logs
+        if: always()
+        run: docker logs used-car-test
+
+      - name: Remove container
+        if: always()
+        run: docker rm -f used-car-test
